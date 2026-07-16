@@ -27,7 +27,7 @@ const SEARCH_PATHS = ["~", "/Volumes", "/Applications"] as const
 const PATHS_TO_REMOVE = [
   "~/.android",
   "~/.bash_history",
-  "~/bun_repl_history",
+  "~/.bun_repl_history",
   "~/.cache",
   "~/.cocoapods",
   "~/.cups",
@@ -48,11 +48,13 @@ const PATHS_TO_REMOVE = [
   "~/.sonarlint",
   "~/.sts4",
   "~/.swiftpm",
+  "~/.terraform.d",
   "~/.yarn",
   "~/.yarnrc",
   "~/Movies",
   "~/Music",
   "~/.viminfo",
+  "~/.zsh_sessions",
   "~/.zsh_history",
 ] as const
 
