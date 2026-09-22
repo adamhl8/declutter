@@ -1,3 +1,9 @@
+## [0.2.1](https://github.com/adamhl8/declutter/compare/v0.2.0..v0.2.1) - 2026-09-22
+
+### ⚙️ Miscellaneous Tasks
+
+- _(deps)_ update dependencies ([5fd62a2](https://github.com/adamhl8/declutter/commit/5fd62a241ae1688ac14f397d443d21614af550c2) by @adamhl8)
+
 ## [0.2.0](https://github.com/adamhl8/declutter/compare/v0.1.1..v0.2.0) - 2026-07-16
 
 ### 🚀 Features
