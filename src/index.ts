@@ -1,10 +1,11 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
+import { execFileSync } from "node:child_process"
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import process from "node:process"
+import readline from "node:readline"
 
-import { $ } from "bun"
 import type { Result } from "ts-explicit-errors"
 import { attempt, err, isErr } from "ts-explicit-errors"
 
@@ -13,7 +14,7 @@ const HOME_DIR = os.homedir()
 
 const untildify = (pathWithTilde: string) => (HOME_DIR ? pathWithTilde.replace(TILDE_REGEX, HOME_DIR) : pathWithTilde)
 
-export const resolvePath = (pathToResolve: string) => {
+const resolvePath = (pathToResolve: string) => {
   let resolvedPath = pathToResolve.trim()
   resolvedPath = untildify(resolvedPath)
   resolvedPath = path.resolve(resolvedPath)
@@ -77,12 +78,16 @@ const removePaths = async (pathsToRemove: readonly string[]) => {
   return removedPaths.filter((removedPath) => removedPath !== undefined)
 }
 
-const findMatchesByPattern = async () => {
+const findMatchesByPattern = () => {
   // fd has no "or" flag, so alternate the patterns into one regex to search each path a single time
   const combinedPattern = PATTERNS_TO_REMOVE.map((regex) => regex.source).join("|")
   const searchPaths = SEARCH_PATHS.map(resolvePath)
 
-  const stdout = await $`fd --unrestricted --absolute-path --type f ${combinedPattern} ${searchPaths}`.text()
+  const stdout = execFileSync(
+    "fd",
+    ["--unrestricted", "--absolute-path", "--type", "f", combinedPattern, ...searchPaths],
+    { encoding: "utf8", maxBuffer: Number.POSITIVE_INFINITY, stdio: "pipe" },
+  )
   const matches = stdout.trim().split("\n").filter(Boolean)
 
   const matchesByPattern = new Map<RegExp, string[]>(PATTERNS_TO_REMOVE.map((regex) => [regex, []]))
@@ -99,25 +104,35 @@ const findMatchesByPattern = async () => {
 
 const handlePatterns = async () => {
   console.info("\nFinding files matching patterns...")
-  const matchesByPattern = await findMatchesByPattern()
+  const matchesByPattern = findMatchesByPattern()
 
-  for (const [regex, matches] of matchesByPattern) {
-    const pattern = regex.source
-    if (matches.length === 0) {
-      console.info(`\nNo matches found for pattern '${pattern}'`)
-      continue
+  // Read answers through the line iterator because it buffers lines typed ahead and ends cleanly on EOF.
+  const rl = readline.createInterface({ input: process.stdin })
+  const lines = rl[Symbol.asyncIterator]()
+  try {
+    // Prompt for one pattern at a time, so the awaits in this loop are sequential on purpose.
+    for (const [regex, matches] of matchesByPattern) {
+      const pattern = regex.source
+      if (matches.length === 0) {
+        console.info(`\nNo matches found for pattern '${pattern}'`)
+        continue
+      }
+
+      console.info(`\nFound ${matches.length} files matching pattern '${pattern}':`)
+      console.info(matches.join("\n"))
+
+      process.stdout.write("\nRemove? [y/N] ")
+      // oxlint-disable-next-line no-await-in-loop
+      const line = await lines.next()
+      if (line.done === true || line.value.trim().toLowerCase() !== "y") continue
+
+      // oxlint-disable-next-line no-await-in-loop
+      const removedPaths = await removePaths(matches)
+
+      console.info(`Removed ${removedPaths.length} files`)
     }
-
-    console.info(`\nFound ${matches.length} files matching pattern '${pattern}':`)
-    console.info(matches.join("\n"))
-
-    // oxlint-disable-next-line eslint/no-alert - prompt is bun's stdin reader here
-    const response = prompt("\nRemove? [y/N]")
-    if (response?.trim().toLowerCase() !== "y") continue
-
-    const removedPaths = await removePaths(matches)
-
-    console.info(`Removed ${removedPaths.length} files`)
+  } finally {
+    rl.close()
   }
 }
 
