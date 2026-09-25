@@ -43,7 +43,7 @@
     "ts-explicit-errors": "^4.1.3"
   },
   "devDependencies": {
-    "@adamhl8/configs": "^2.8.0",
+    "@adamhl8/configs": "^2.8.1",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@types/bun": "^1.4.2",
