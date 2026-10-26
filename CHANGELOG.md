@@ -1,3 +1,9 @@
+## [0.2.4](https://github.com/adamhl8/declutter/compare/v0.2.3..v0.2.4) - 2026-10-26
+
+### ⚙️ Miscellaneous Tasks
+
+- _(deps)_ update dependencies ([52956b8](https://github.com/adamhl8/declutter/commit/52956b83c2ff0a0d6e8a11471eac4c89a7db9fad) by @adamhl8)
+
 ## [0.2.3](https://github.com/adamhl8/declutter/compare/v0.2.2..v0.2.3) - 2026-09-24
 
 ### ⚙️ Miscellaneous Tasks
