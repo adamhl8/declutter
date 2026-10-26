@@ -7,7 +7,7 @@ import process from "node:process"
 import readline from "node:readline"
 
 import type { Result } from "ts-explicit-errors"
-import { attempt, err, isErr } from "ts-explicit-errors"
+import { attempt, err, isErr, messageChain } from "ts-explicit-errors"
 
 const TILDE_REGEX = /^~(?=$|\/|\\)/v
 const HOME_DIR = os.homedir()
@@ -122,11 +122,11 @@ const handlePatterns = async () => {
       console.info(matches.join("\n"))
 
       process.stdout.write("\nRemove? [y/N] ")
-      // oxlint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop - each prompt waits for the previous answer
       const line = await lines.next()
       if (line.done === true || line.value.trim().toLowerCase() !== "y") continue
 
-      // oxlint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop - each prompt waits for the previous answer
       const removedPaths = await removePaths(matches)
 
       console.info(`Removed ${removedPaths.length} files`)
@@ -149,7 +149,7 @@ const declutter = async (): Promise<Result> => {
 const main = async (): Promise<number> => {
   const result = await declutter()
   if (isErr(result)) {
-    console.error(result.messageChain)
+    console.error(messageChain(result))
     return 1
   }
   return 0
